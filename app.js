@@ -1,17 +1,18 @@
-const http = require('http');
+const express = require('express');
+const app = express();
 
-const server = http.createServer((req, res) => {
-    if (req.url === '/') {
-        res.write('Hello World')
-        res.end();
+app.use(express.json());
+
+app.post('/api/residential', (req, res) => {
+    if (req.body.numElevator = 0) {
+        res.status(400).send('numElevator cant be 0')
+        return;
     }
 
-    if (req.url === '/api/test') {
-        res.write(JSON.stringify([1,2,3]));
-        res.end();
-    } 
+    const num = req.body.numElevator;
+    numElevator.push(num)
 });
 
-server.listen(3000);
-
-console.log('Listening on port 3000...');
+//PORT
+const port = process.env.PORT || 3000;
+app.listen(port, () => console.log(`Listening on port ${port}...`));
