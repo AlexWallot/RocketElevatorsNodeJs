@@ -1,7 +1,20 @@
 const express = require('express');
 const app = express();
 
-app.use(express.json());
+// Add headers before the routes are defined
+app.use(function (req, res, next) {
+    // Website you wish to allow to connect
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    // Request methods you wish to allow
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+    // Request headers you wish to allow
+    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
+    // Set to true if you need the website to include cookies in the requests sent
+    // to the API (e.g. in case you use sessions)
+    res.setHeader('Access-Control-Allow-Credentials', true);
+    // Pass to next layer of middleware
+    next();
+  });
 
 app.get('/api/residential', (req, res) => {
     if (req.query.apartment == "" || req.query.floor == "" || req.query.type == "") {
@@ -27,26 +40,29 @@ app.get('/api/residential', (req, res) => {
     }
     let fullPrice = getFullPrice(fees,totalPriceElevator)
 
-    let object =  {"result": [
+    /* let object =  {"result": [
         {"numElevator": numElevator, 
          "totalPriceElevator": totalPriceElevator,
          "fees": fees,
          "fullPrice": fullPrice},
-        ]};
+        ]}; */
 
-    res.send(object);
+    res.send({"numElevator": numElevator, 
+    "totalPriceElevator": totalPriceElevator,
+    "fees": fees,
+    "fullPrice": fullPrice},);
 });
 
 app.get('/api/commercial', (req, res) => {
-    if (req.body.numElevator = 0) {
+    if (req.query.numelevator = 0) {
         res.status(400).send('numElevator cant be 0')
         return;
     }
 
-    let numElevator = req.query.numElevator;
+    let elevator = parseInt(req.query.elevator);
     let type = req.query.type;
 
-    let totalPriceElevator = getTotalElevatorPrice(numElevator,type);
+    let totalPriceElevator = getTotalElevatorPrice(elevator,type);
     let fees = 0;
     if (type == "standard") {
         fees = getStandardFees(totalPriceElevator);
@@ -59,22 +75,17 @@ app.get('/api/commercial', (req, res) => {
     }
     let fullPrice = getFullPrice(fees,totalPriceElevator)
 
-    let object =  {"result": [
-        {"numElevator": numElevator, 
-         "totalPriceElevator": totalPriceElevator,
-         "fees": fees,
-         "fullPrice": fullPrice},
-        ]};
-
-    res.send(object);
+    res.send({"numElevator": elevator, 
+    "totalPriceElevator": totalPriceElevator,
+    "fees": fees,
+    "fullPrice": fullPrice});
 });
 
 app.get('/api/corporate', (req, res) => {
-    if (req.body.numElevator = 0) {
-        res.status(400).send('numElevator cant be 0')
+    if (req.query.floor == "" || req.query.basement == "" || req.query.maxOccup == "" || req.query.type == "") {
+        res.status(400).send('a parameters is empty or not in the good format')
         return;
     }
-
     let floor = req.query.floor;
     let basement = req.query.basement;
     let maxOccup = req.query.maxOccup;
@@ -94,19 +105,15 @@ app.get('/api/corporate', (req, res) => {
     }
     let fullPrice = getFullPrice(fees,totalPriceElevator)
 
-    let object =  {"result": [
-        {"numElevator": numElevator, 
-         "totalPriceElevator": totalPriceElevator,
-         "fees": fees,
-         "fullPrice": fullPrice},
-        ]};
-
-    res.send(object);
+    res.send({"numElevator": numElevator, 
+    "totalPriceElevator": totalPriceElevator,
+    "fees": fees,
+    "fullPrice": fullPrice});
 });
 
 app.get('/api/hybrid', (req, res) => {
-    if (req.body.numElevator = 0) {
-        res.status(400).send('numElevator cant be 0')
+    if (req.query.floor == "" || req.query.basement == "" || req.query.maxOccup == "" || req.query.type == "") {
+        res.status(400).send('a parameters is empty or not in the good format')
         return;
     }
 
@@ -129,14 +136,10 @@ app.get('/api/hybrid', (req, res) => {
     }
     let fullPrice = getFullPrice(fees,totalPriceElevator)
 
-    let object =  {"result": [
-        {"numElevator": numElevator, 
-         "totalPriceElevator": totalPriceElevator,
-         "fees": fees,
-         "fullPrice": fullPrice},
-        ]};
-
-    res.send(object);
+    res.send({"numElevator": numElevator, 
+    "totalPriceElevator": totalPriceElevator,
+    "fees": fees,
+    "fullPrice": fullPrice});
 });
 
 
@@ -189,6 +192,7 @@ function numberElevatorCorporate(floor,basement,maxOccup) {
 
 /* Caculate the number of recommanded elevators for corporate */
 function numberElevatorHybrid(floor,basement,maxOccup) {
+
     var totalFloors = parseInt(floor) + parseInt(basement);
     var totalOccup = maxOccup*totalFloors;
 
