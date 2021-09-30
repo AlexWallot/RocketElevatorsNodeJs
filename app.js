@@ -3,15 +3,245 @@ const app = express();
 
 app.use(express.json());
 
-app.post('/api/residential', (req, res) => {
+app.get('/api/residential', (req, res) => {
+    if (req.query.apartment == "" || req.query.floor == "" || req.query.type == "") {
+        res.status(400).send('a parameters is empty or not in the good format')
+        return;
+    }
+
+    let apartment = req.query.apartment;
+    let floor = req.query.floor;
+    let type = req.query.type;
+
+    let numElevator = numberElevatorResidential(apartment,floor);
+    let totalPriceElevator = getTotalElevatorPrice(numElevator,type);
+    let fees = 0;
+    if (type == "standard") {
+        fees = getStandardFees(totalPriceElevator);
+    }
+    if (type == "premium") {
+        fees = getPremiumFees(totalPriceElevator);
+    }
+    if (type == "excelium") {
+        fees = getExceliumFees(totalPriceElevator);
+    }
+    let fullPrice = getFullPrice(fees,totalPriceElevator)
+
+    let object =  {"result": [
+        {"numElevator": numElevator, 
+         "totalPriceElevator": totalPriceElevator,
+         "fees": fees,
+         "fullPrice": fullPrice},
+        ]};
+
+    res.send(object);
+});
+
+app.get('/api/commercial', (req, res) => {
     if (req.body.numElevator = 0) {
         res.status(400).send('numElevator cant be 0')
         return;
     }
 
-    const num = req.body.numElevator;
-    numElevator.push(num)
+    let numElevator = req.query.numElevator;
+    let type = req.query.type;
+
+    let totalPriceElevator = getTotalElevatorPrice(numElevator,type);
+    let fees = 0;
+    if (type == "standard") {
+        fees = getStandardFees(totalPriceElevator);
+    }
+    if (type == "premium") {
+        fees = getPremiumFees(totalPriceElevator);
+    }
+    if (type == "excelium") {
+        fees = getExceliumFees(totalPriceElevator);
+    }
+    let fullPrice = getFullPrice(fees,totalPriceElevator)
+
+    let object =  {"result": [
+        {"numElevator": numElevator, 
+         "totalPriceElevator": totalPriceElevator,
+         "fees": fees,
+         "fullPrice": fullPrice},
+        ]};
+
+    res.send(object);
 });
+
+app.get('/api/corporate', (req, res) => {
+    if (req.body.numElevator = 0) {
+        res.status(400).send('numElevator cant be 0')
+        return;
+    }
+
+    let floor = req.query.floor;
+    let basement = req.query.basement;
+    let maxOccup = req.query.maxOccup;
+    let type = req.query.type;
+
+    let numElevator = numberElevatorCorporate(floor,basement,maxOccup);
+    let totalPriceElevator = getTotalElevatorPrice(numElevator,type);
+    let fees = 0;
+    if (type == "standard") {
+        fees = getStandardFees(totalPriceElevator);
+    }
+    if (type == "premium") {
+        fees = getPremiumFees(totalPriceElevator);
+    }
+    if (type == "excelium") {
+        fees = getExceliumFees(totalPriceElevator);
+    }
+    let fullPrice = getFullPrice(fees,totalPriceElevator)
+
+    let object =  {"result": [
+        {"numElevator": numElevator, 
+         "totalPriceElevator": totalPriceElevator,
+         "fees": fees,
+         "fullPrice": fullPrice},
+        ]};
+
+    res.send(object);
+});
+
+app.get('/api/hybrid', (req, res) => {
+    if (req.body.numElevator = 0) {
+        res.status(400).send('numElevator cant be 0')
+        return;
+    }
+
+    let floor = req.query.floor;
+    let basement = req.query.basement;
+    let maxOccup = req.query.maxOccup;
+    let type = req.query.type;
+
+    let numElevator = numberElevatorHybrid(floor,basement,maxOccup);
+    let totalPriceElevator = getTotalElevatorPrice(numElevator,type);
+    let fees = 0;
+    if (type == "standard") {
+        fees = getStandardFees(totalPriceElevator);
+    }
+    if (type == "premium") {
+        fees = getPremiumFees(totalPriceElevator);
+    }
+    if (type == "excelium") {
+        fees = getExceliumFees(totalPriceElevator);
+    }
+    let fullPrice = getFullPrice(fees,totalPriceElevator)
+
+    let object =  {"result": [
+        {"numElevator": numElevator, 
+         "totalPriceElevator": totalPriceElevator,
+         "fees": fees,
+         "fullPrice": fullPrice},
+        ]};
+
+    res.send(object);
+});
+
+
+//****************************************OPERATION*********************************************************** */
+
+const STANDARD_PRICE = 7565;
+const PREMIUM_PRICE = 12345;
+const EXCELIUM_PRICE = 15400;
+
+const STANDARD_FEES = 0.10;
+const PREMIUM_FEES = 0.13;
+const EXCELIUM_FEES = 0.16;
+
+// get number of elevator for residential
+function numberElevatorResidential(apartment,floor) {
+    var moy = Math.ceil(apartment/floor);
+    numElevator = Math.ceil(moy/6);
+
+    if (numElevator == 0) {
+        numElevator++;
+    }
+    if (floor > 20 == true) {
+        var column = Math.ceil(floor / 20);
+        numElevator *= column;
+    }
+
+    return numElevator;
+}
+
+/* Caculate the number of recommanded elevators for corporate */
+function numberElevatorCorporate(floor,basement,maxOccup) {
+
+    var totalFloors = parseInt(floor) + parseInt(basement);
+    var totalOccup = maxOccup*totalFloors;
+
+    numElevator = Math.round(totalOccup/1000);
+        if (numElevator == 0) {
+            numElevator++;
+        }
+
+    elevatorColumns = Math.ceil(totalFloors/20);
+    if (elevatorColumns == 0) {
+        elevatorColumns++;
+    }
+
+    var averageElCol = Math.ceil(numElevator/elevatorColumns);
+
+    return averageElCol*elevatorColumns;
+}
+
+/* Caculate the number of recommanded elevators for corporate */
+function numberElevatorHybrid(floor,basement,maxOccup) {
+    var totalFloors = parseInt(floor) + parseInt(basement);
+    var totalOccup = maxOccup*totalFloors;
+
+    numElevator = Math.round(totalOccup/1000);
+        if (numElevator == 0) {
+            numElevator++;
+        }
+
+    elevatorColumns = Math.ceil(totalFloors/20);
+    if (elevatorColumns == 0) {
+        elevatorColumns++;
+    }
+
+    var averageElCol = Math.ceil(numElevator/elevatorColumns);
+
+    return averageElCol*elevatorColumns;
+}
+
+
+// get the total price of elevator
+function getTotalElevatorPrice(numElevator,type) {
+    var total = 0;
+    if (type == "standard") {
+        total = numElevator * STANDARD_PRICE;
+        return total;
+    }else if (type == "premium") {
+        total = numElevator * PREMIUM_PRICE;
+        return total;
+    }else if (type == "excelium") {
+        total = numElevator * EXCELIUM_PRICE;
+        return total;
+    }
+    return total;
+}
+
+function getStandardFees(total) {
+    var totalFees = total * STANDARD_FEES;
+    return totalFees;
+}
+
+function getPremiumFees(total) {
+    var totalFees = total * PREMIUM_FEES;
+    return totalFees;
+}
+
+function getExceliumFees(total) {
+    var totalFees = total * EXCELIUM_FEES;
+    return totalFees;
+}
+
+function getFullPrice(fees,total){
+    return fees+total;
+}
 
 //PORT
 const port = process.env.PORT || 3000;
