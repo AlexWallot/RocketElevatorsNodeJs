@@ -16,6 +16,7 @@ app.use(function (req, res, next) {
     next();
   });
 
+// calculate the values and return an object with all the data for Residential
 app.get('/api/residential', (req, res) => {
     if (req.query.apartment == "" || req.query.floor == "" || req.query.type == "") {
         res.status(400).send('a parameters is empty or not in the good format')
@@ -53,6 +54,7 @@ app.get('/api/residential', (req, res) => {
     "fullPrice": fullPrice},);
 });
 
+// calculate the values and return an object with all the data for Commercial
 app.get('/api/commercial', (req, res) => {
     if (req.query.numelevator = 0) {
         res.status(400).send('numElevator cant be 0')
@@ -81,6 +83,7 @@ app.get('/api/commercial', (req, res) => {
     "fullPrice": fullPrice});
 });
 
+// calculate the values and return an object with all the data for Corporate
 app.get('/api/corporate', (req, res) => {
     if (req.query.floor == "" || req.query.basement == "" || req.query.maxOccup == "" || req.query.type == "") {
         res.status(400).send('a parameters is empty or not in the good format')
@@ -111,6 +114,7 @@ app.get('/api/corporate', (req, res) => {
     "fullPrice": fullPrice});
 });
 
+// calculate the values and return an object with all the data for Hybrid
 app.get('/api/hybrid', (req, res) => {
     if (req.query.floor == "" || req.query.basement == "" || req.query.maxOccup == "" || req.query.type == "") {
         res.status(400).send('a parameters is empty or not in the good format')
@@ -228,21 +232,25 @@ function getTotalElevatorPrice(numElevator,type) {
     return total;
 }
 
+// calculate the fees when Standard is checked
 function getStandardFees(total) {
     var totalFees = total * STANDARD_FEES;
     return totalFees;
 }
 
+// calculate the fees when Premium is checked
 function getPremiumFees(total) {
     var totalFees = total * PREMIUM_FEES;
     return totalFees;
 }
 
+// calculate the fees when Excelium is checked
 function getExceliumFees(total) {
     var totalFees = total * EXCELIUM_FEES;
     return totalFees;
 }
 
+// calculate the full price with fees and total price of elevators
 function getFullPrice(fees,total){
     return fees+total;
 }
