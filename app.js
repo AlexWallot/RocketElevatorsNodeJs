@@ -41,13 +41,6 @@ app.get('/api/residential', (req, res) => {
     }
     let fullPrice = getFullPrice(fees,totalPriceElevator)
 
-    /* let object =  {"result": [
-        {"numElevator": numElevator, 
-         "totalPriceElevator": totalPriceElevator,
-         "fees": fees,
-         "fullPrice": fullPrice},
-        ]}; */
-
     res.send({"numElevator": numElevator, 
     "totalPriceElevator": totalPriceElevator,
     "fees": fees,
